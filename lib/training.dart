@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'storage.dart';
+import 'sound.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -33,13 +34,16 @@ class _TrainingScreenState extends State<TrainingScreen>
   Offset pos = const Offset(60, 400);
   double vx = 0, vy = 0;
   bool onGround = false;
-  bool left = false, right = false, jump = false;
+  bool wasOnGround = false;
+  bool left = false, right = false, jump = false, fire = false;
+  double stepTimer = 0, fireTimer = 0;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    Sfx.playMusic('game');
     _ticker = createTicker(_tick)..start();
   }
 
@@ -47,6 +51,7 @@ class _TrainingScreenState extends State<TrainingScreen>
   void dispose() {
     _ticker.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    Sfx.playMusic('menu');
     super.dispose();
   }
 
@@ -61,8 +66,10 @@ class _TrainingScreenState extends State<TrainingScreen>
     if (jump && onGround) {
       vy = -560;
       onGround = false;
+      Sfx.play('jump');
     }
     vy = min(vy + 1400 * dt, 900);
+    final impact = vy;
 
     // Horizontal move + collision
     double nx = pos.dx + vx * dt;
@@ -98,6 +105,21 @@ class _TrainingScreenState extends State<TrainingScreen>
       pos = const Offset(60, 400);
       vy = 0;
     }
+
+    // Sounds
+    if (onGround && !wasOnGround && impact > 250) Sfx.play('land');
+    wasOnGround = onGround;
+    stepTimer += dt;
+    if (dir != 0 && onGround && stepTimer > 0.28) {
+      Sfx.play('step');
+      stepTimer = 0;
+    }
+    fireTimer += dt;
+    if (fire && fireTimer > 0.15) {
+      Sfx.play('shoot');
+      fireTimer = 0;
+    }
+
     setState(() {});
   }
 
@@ -143,7 +165,7 @@ class _TrainingScreenState extends State<TrainingScreen>
             left: 0,
             right: 0,
             child: Center(
-              child: Text('TRAINING - chalo, kudo, platforms pe jao',
+              child: Text('TRAINING - chalo, kudo, FIRE aur GRENADE dabao',
                   style: TextStyle(color: Colors.white70)),
             ),
           ),
@@ -159,7 +181,15 @@ class _TrainingScreenState extends State<TrainingScreen>
           Positioned(
             right: 24,
             bottom: 24,
-            child: _btn(Icons.keyboard_arrow_up, (v) => jump = v),
+            child: Row(children: [
+              _btn(Icons.local_fire_department, (v) => fire = v),
+              const SizedBox(width: 12),
+              _btn(Icons.circle, (v) {
+                if (v) Sfx.play('explosion');
+              }),
+              const SizedBox(width: 12),
+              _btn(Icons.keyboard_arrow_up, (v) => jump = v),
+            ]),
           ),
         ],
       ),
@@ -177,9 +207,7 @@ class _TrainingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final scale = size.height / worldH;
     final viewW = size.width / scale;
-    final double camX = (pos.dx + pw / 2 - viewW / 2)
-        .clamp(0.0, max(0.0, worldW - viewW))
-        .toDouble();
+    final camX = (pos.dx + pw / 2 - viewW / 2).clamp(0.0, max(0.0, worldW - viewW));
 
     canvas.drawRect(Offset.zero & size, Paint()..color = const Color(0xFF16203A));
     canvas.save();
