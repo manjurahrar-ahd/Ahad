@@ -142,7 +142,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SwitchListTile(
             title: const Text('Sound'),
             value: Store.sound,
-            onChanged: (v) => setState(() => Store.sound = v),
+            onChanged: (v) {
+              setState(() => Store.music = v);
+              v ? Sfx.playMusic('menu') : Sfx.stopMusic();
+            },
           ),
           _slider('SFX volume', Store.sfxVolume, 0, 1, (v) => Store.sfxVolume = v),
           _slider('Control sensitivity', Store.moveSens, 0.5, 1.5, (v) => Store.moveSens = v),
