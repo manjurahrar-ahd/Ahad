@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'storage.dart';
+import 'sound.dart';
 import 'screens.dart';
 import 'training.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Store.init();
+  try {
+    await Sfx.init();
+    Sfx.playMusic('menu');
+  } catch (_) {}
   runApp(const ArenaApp());
 }
 
@@ -27,8 +32,10 @@ class ArenaApp extends StatelessWidget {
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
-  void _go(BuildContext c, Widget w) =>
-      Navigator.push(c, MaterialPageRoute(builder: (_) => w));
+  void _go(BuildContext c, Widget w) {
+    Sfx.play('click');
+    Navigator.push(c, MaterialPageRoute(builder: (_) => w));
+  }
 
   @override
   Widget build(BuildContext context) {
