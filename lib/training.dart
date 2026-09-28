@@ -177,7 +177,9 @@ class _TrainingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final scale = size.height / worldH;
     final viewW = size.width / scale;
-    final camX = (pos.dx + pw / 2 - viewW / 2).clamp(0.0, max(0.0, worldW - viewW));
+    final double camX = (pos.dx + pw / 2 - viewW / 2)
+        .clamp(0.0, max(0.0, worldW - viewW))
+        .toDouble();
 
     canvas.drawRect(Offset.zero & size, Paint()..color = const Color(0xFF16203A));
     canvas.save();
