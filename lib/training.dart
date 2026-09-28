@@ -212,7 +212,7 @@ class _TrainingPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, Paint()..color = const Color(0xFF16203A));
     canvas.save();
     canvas.scale(scale);
-    canvas.translate(-camX, 0);
+    canvas.translate(-camX.toDouble(), 0.0);
 
     final p = Paint()..color = const Color(0xFF3C4A6B);
     for (final r in platforms) {
